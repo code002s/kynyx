@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:#080c10;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;font-family:'Share Tech Mono',monospace;position:relative;}
+
+.grid-bg{position:fixed;inset:0;z-index:0;background-image:linear-gradient(rgba(0,255,180,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,180,0.04) 1px,transparent 1px);background-size:40px 40px;animation:gridShift 20s linear infinite;}
+@keyframes gridShift{from{background-position:0 0}to{background-position:40px 40px}}
+
+.scanlines{position:fixed;inset:0;z-index:2;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.18) 3px,rgba(0,0,0,0.18) 4px);}
+
+.vignette{position:fixed;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse at center,transparent 30%,rgba(0,0,0,0.85) 100%);}
+
+.corner{position:fixed;width:60px;height:60px;z-index:10;}
+.tl{top:16px;left:16px;border-top:1px solid #00ffb4;border-left:1px solid #00ffb4;}
+.tr{top:16px;right:16px;border-top:1px solid #ff003c;border-right:1px solid #ff003c;}
+.bl{bottom:16px;left:16px;border-bottom:1px solid #00ffb4;border-left:1px solid #00ffb4;}
+.br{bottom:16px;right:16px;border-bottom:1px solid #ff003c;border-right:1px solid #ff003c;}
+
+.corner-dot{position:fixed;width:4px;height:4px;border-radius:50%;z-index:10;}
+.cd-tl{top:15px;left:15px;background:#00ffb4;box-shadow:0 0 6px #00ffb4;}
+.cd-tr{top:15px;right:15px;background:#ff003c;box-shadow:0 0 6px #ff003c;}
+.cd-bl{bottom:15px;left:15px;background:#00ffb4;box-shadow:0 0 6px #00ffb4;}
+.cd-br{bottom:15px;right:15px;background:#ff003c;box-shadow:0 0 6px #ff003c;}
+
+.hud-line{position:fixed;z-index:10;font-size:9px;color:rgba(0,255,180,0.35);letter-spacing:0.15em;}
+.hud-tl{top:22px;left:80px;}
+.hud-tr{top:22px;right:80px;text-align:right;}
+.hud-bl{bottom:22px;left:80px;}
+.hud-br{bottom:22px;right:80px;text-align:right;}
+
+.scene{position:relative;z-index:10;display:flex;flex-direction:column;align-items:center;gap:0;}
+
+/* TOP LABEL */
+.label-top{font-family:'Share Tech Mono',monospace;font-size:clamp(0.65rem,1.5vw,0.9rem);letter-spacing:0.6em;color:#00ffb4;opacity:0;animation:fadeIn 0.8s 0.3s forwards;position:relative;}
+.label-top::before{content:'> ';color:#ff003c;}
+.label-top::after{content:'';display:inline-block;width:6px;height:1em;background:#00ffb4;vertical-align:middle;margin-left:4px;animation:blink 1s 1.2s step-end infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* LOGO */
+.logo-outer{position:relative;width:min(520px,88vw);margin:24px 0 0;}
+.logo-hex{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:260px;height:260px;opacity:0;animation:fadeIn 0.6s 0.1s forwards;}
+
+.logo-svg{width:100%;height:auto;display:block;position:relative;z-index:2;animation:glitch 8s steps(1) infinite;}
+@keyframes glitch{
+  0%,85%,100%{transform:none;filter:none;}
+  86%{transform:translate(-3px,0);filter:hue-rotate(90deg);}
+  86.4%{transform:translate(3px,0);}
+  86.8%{transform:none;filter:none;}
+  92%{transform:translate(-5px,1px) skewX(-2deg);filter:hue-rotate(180deg);}
+  92.4%{transform:translate(5px,-1px) skewX(2deg);}
+  92.8%{transform:none;filter:none;}
+}
+
+.stroke-g{fill:none;stroke:#00ffb4;stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round;}
+.stroke-r{fill:none;stroke:#ff003c;stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round;}
+.stroke-w{fill:none;stroke:#c8ffe8;stroke-width:1;stroke-linejoin:round;stroke-linecap:round;opacity:0.3;}
+
+.draw{stroke-dasharray:3000;stroke-dashoffset:3000;}
+.draw.stroke-g{animation:draw 2s ease forwards,pulseG 4s 2.2s ease-in-out infinite;}
+.draw.stroke-r{animation:draw 2s ease forwards,pulseR 4s 2.2s ease-in-out infinite;}
+.d1{animation-delay:0s,2.2s!important;}
+.d2{animation-delay:0.2s,2.2s!important;}
+.d3{animation-delay:0.4s,2.2s!important;}
+.d4{animation-delay:0.6s,2.2s!important;}
+.d5{animation-delay:0.1s,2.2s!important;}
+.d6{animation-delay:0.3s,2.2s!important;}
+.d7{animation-delay:0.5s,2.2s!important;}
+.d8{animation-delay:0.7s,2.2s!important;}
+
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes pulseG{0%,100%{filter:drop-shadow(0 0 3px #00ffb4) drop-shadow(0 0 8px rgba(0,255,180,0.5))}50%{filter:drop-shadow(0 0 6px #00ffb4) drop-shadow(0 0 20px rgba(0,255,180,0.8))}}
+@keyframes pulseR{0%,100%{filter:drop-shadow(0 0 3px #ff003c) drop-shadow(0 0 8px rgba(255,0,60,0.5))}50%{filter:drop-shadow(0 0 6px #ff003c) drop-shadow(0 0 20px rgba(255,0,60,0.8))}}
+
+/* DATA STRIP */
+.data-strip{width:min(520px,88vw);display:flex;align-items:center;gap:0;opacity:0;animation:fadeIn 0.8s 2.4s forwards;margin-top:6px;}
+.data-cell{flex:1;border-top:1px solid rgba(0,255,180,0.2);border-bottom:1px solid rgba(0,255,180,0.2);padding:6px 10px;font-size:9px;color:rgba(0,255,180,0.4);letter-spacing:0.1em;text-align:center;}
+.data-cell:first-child{border-left:1px solid rgba(0,255,180,0.2);}
+.data-cell:last-child{border-right:1px solid rgba(0,255,180,0.2);}
+.data-cell span{display:block;font-size:11px;color:rgba(0,255,180,0.7);margin-top:2px;}
+
+/* DIVIDER */
+.divider{width:min(520px,88vw);height:1px;margin:16px 0;opacity:0;animation:fadeIn 0.6s 2.6s forwards;position:relative;background:rgba(0,255,180,0.1);}
+.divider::before{content:'';position:absolute;top:0;left:0;height:1px;width:0;background:linear-gradient(90deg,#00ffb4,#ff003c);animation:dividerFill 1.2s 2.6s ease forwards;}
+@keyframes dividerFill{to{width:100%}}
+.divider-dot{position:absolute;top:-3px;width:7px;height:7px;border-radius:50%;}
+.divider-dot.left{left:0;background:#00ffb4;animation:dotPulse 2s 3.8s ease-in-out infinite;}
+.divider-dot.right{right:0;background:#ff003c;animation:dotPulse 2s 3.8s ease-in-out infinite;}
+@keyframes dotPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(0.6)}}
+
+/* BOTTOM LABEL */
+.label-bottom{font-family:'Orbitron',monospace;font-size:clamp(2rem,7vw,4rem);font-weight:900;letter-spacing:0.5em;color:transparent;-webkit-text-stroke:1px rgba(0,255,180,0.6);opacity:0;animation:fadeIn 0.8s 2.8s forwards;position:relative;padding-right:0.5em;}
+.label-bottom::after{content:attr(data-text);position:absolute;inset:0;-webkit-text-stroke:0;color:#00ffb4;opacity:0;animation:textReveal 0.8s 3s ease forwards;}
+@keyframes textReveal{to{opacity:0.15}}
+
+/* STATUS BAR */
+.status-bar{width:min(520px,88vw);display:flex;justify-content:space-between;align-items:center;margin-top:12px;opacity:0;animation:fadeIn 0.8s 3.2s forwards;}
+.status-left{font-size:9px;color:rgba(255,0,60,0.5);letter-spacing:0.15em;}
+.status-right{font-size:9px;color:rgba(0,255,180,0.5);letter-spacing:0.15em;}
+.status-mid{display:flex;gap:6px;align-items:center;}
+.pip{width:6px;height:6px;border-radius:50%;}
+.pip.active{background:#00ffb4;animation:pipBlink 2s ease-in-out infinite;}
+.pip.inactive{background:#ff003c;opacity:0.5;}
+@keyframes pipBlink{0%,100%{opacity:1}50%{opacity:0.3}}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="scanlines"></div>
+<div class="vignette"></div>
+
+<div class="corner tl"></div>
+<div class="corner tr"></div>
+<div class="corner bl"></div>
+<div class="corner br"></div>
+<div class="corner-dot cd-tl"></div>
+<div class="corner-dot cd-tr"></div>
+<div class="corner-dot cd-bl"></div>
+<div class="corner-dot cd-br"></div>
+
+<div class="hud-line hud-tl">SYS.BOOT // VER 4.1.7</div>
+<div class="hud-line hud-tr">SEC.LVL // ALPHA</div>
+<div class="hud-line hud-bl">NODE // 192.168.0.kynx</div>
+<div class="hud-line hud-br">STATUS // ONLINE</div>
+
+<div class="scene">
+  <div class="label-top">KYNX</div>
+
+  <div class="logo-outer">
+    <svg class="logo-hex" viewBox="0 0 260 260" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="130,10 240,72 240,188 130,250 20,188 20,72" fill="none" stroke="rgba(0,255,180,0.06)" stroke-width="1"/>
+      <polygon points="130,25 225,80 225,180 130,235 35,180 35,80" fill="none" stroke="rgba(0,255,180,0.04)" stroke-width="0.5"/>
+    </svg>
+
+    <svg class="logo-svg" viewBox="0 0 500 460" xmlns="http://www.w3.org/2000/svg">
+      <!-- inner grid lines subtle -->
+      <line x1="0" y1="230" x2="500" y2="230" stroke="rgba(0,255,180,0.04)" stroke-width="1"/>
+      <line x1="250" y1="0" x2="250" y2="460" stroke="rgba(0,255,180,0.04)" stroke-width="1"/>
+
+      <!-- blue/green K left strokes -->
+      <path class="stroke-g draw d1" d="M60,40 L220,230 L60,420 L100,420 L240,250 L240,210 L100,40 Z"/>
+      <path class="stroke-g draw d2" d="M108,40 L248,210 L248,250 L128,420 L158,420 L258,268 L258,192 L148,40 Z"/>
+
+      <!-- center diamond accents -->
+      <path class="stroke-w draw d3" d="M214,186 L250,140 L286,186 L250,232 Z"/>
+      <path class="stroke-w draw d4" d="M214,274 L250,318 L286,274 L250,228 Z"/>
+
+      <!-- red R right strokes -->
+      <path class="stroke-r draw d5" d="M440,40 L280,230 L440,420 L400,420 L260,250 L260,210 L400,40 Z"/>
+      <path class="stroke-r draw d6" d="M392,40 L252,210 L252,250 L372,420 L342,420 L242,268 L242,192 L352,40 Z"/>
+
+      <!-- accent sparks top right -->
+      <path class="stroke-r draw d7" d="M405,36 L470,0"/>
+      <path class="stroke-r draw d8" d="M428,20 L500,0"/>
+
+      <!-- scan line overlays -->
+      <line x1="60" y1="230" x2="440" y2="230" stroke="rgba(0,255,180,0.12)" stroke-width="0.5" stroke-dasharray="4 6"/>
+    </svg>
+  </div>
+
+  <div class="data-strip">
+    <div class="data-cell">FREQ<span>08.4 GHz</span></div>
+    <div class="data-cell">HASH<span>A7F2::9C</span></div>
+    <div class="data-cell">LATENCY<span>0.04 ms</span></div>
+    <div class="data-cell">UPTIME<span>99.97%</span></div>
+  </div>
+
+  <div class="divider">
+    <div class="divider-dot left"></div>
+    <div class="divider-dot right"></div>
+  </div>
+
+  <div class="label-bottom" data-text="YY">YY</div>
+
+  <div class="status-bar">
+    <div class="status-left">ERR::0x00</div>
+    <div class="status-mid">
+      <div class="pip active"></div>
+      <div class="pip active"></div>
+      <div class="pip inactive"></div>
+      <div class="pip active"></div>
+    </div>
+    <div class="status-right">AUTH_OK</div>
+  </div>
+</div>
+
+<script>
+const canvas = document.createElement('canvas');
+canvas.style.cssText = 'position:fixed;inset:0;z-index:0;pointer-events:none;';
+document.body.prepend(canvas);
+const ctx = canvas.getContext('2d');
+let W, H;
+function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;}
+resize();
+window.addEventListener('resize',resize);
+
+const pts = Array.from({length:60},()=>({
+  x:Math.random()*1400,y:Math.random()*900,
+  vx:(Math.random()-0.5)*0.3,vy:(Math.random()-0.5)*0.3,
+  r:Math.random()*1.2+0.2,
+  c:Math.random()<0.6?'rgba(0,255,180,':'rgba(255,0,60,',
+  a:Math.random()*0.3+0.05
+}));
+
+function tick(){
+  ctx.clearRect(0,0,W,H);
+  for(const p of pts){
+    p.x+=p.vx;p.y+=p.vy;
+    if(p.x<0)p.x=W;if(p.x>W)p.x=0;
+    if(p.y<0)p.y=H;if(p.y>H)p.y=0;
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fillStyle=p.c+p.a+')';
+    ctx.fill();
+  }
+  requestAnimationFrame(tick);
+}
+tick();
+
+// random data flicker
+const cells = document.querySelectorAll('.data-cell span');
+const data = [
+  ['08.4 GHz','07.9 GHz','09.1 GHz'],
+  ['A7F2::9C','B3E1::4A','FF00::7D'],
+  ['0.04 ms','0.03 ms','0.05 ms'],
+  ['99.97%','99.94%','100.00%']
+];
+setInterval(()=>{
+  const i = Math.floor(Math.random()*4);
+  const d = data[i];
+  cells[i].textContent = d[Math.floor(Math.random()*d.length)];
+},1800);
+</script>
+</body>
+</html>
